@@ -42,14 +42,6 @@ pnpm build
 pnpm preview
 ```
 
-## 部署到 GitHub Pages
-
-**将当前文件夹的内容作为仓库根目录上传**：根目录应直接包含 `package.json`、`index.html`、`src/` 和 `.github/`，不要再包一层 `workbench/`。
-
-已提供 GitHub Actions 工作流，推送到 `main` 后自动构建与部署。先在仓库 **Settings → Pages → Source** 选择 **GitHub Actions**。
-
-完整步骤见 [部署说明](docs/DEPLOYMENT.md)。
-
 ## 模拟范围与数据
 
 这是接线学习工具，使用预设的 GPIO 分配、模块模型和模拟读数，不会烧录或控制真实 ESP32，也不提供真实语音识别、联网对话或电路级仿真。它不会计算电流、功耗、实际时序或所有电气风险。模拟通过不等于实物必然可用。
