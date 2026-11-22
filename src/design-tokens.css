@@ -1,0 +1,41 @@
+/* See ../DESIGN.md. Interface spacing is independent from breadboard geometry. */
+:root {
+  --space-0: 0;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 6px;
+  --space-4: 8px;
+  --space-6: 12px;
+  --space-8: 16px;
+  --space-10: 20px;
+  --space-12: 24px;
+  --space-16: 32px;
+  --font-ui: system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
+  --text-caption: 12px;
+  --text-control: 13px;
+  --text-body: 14px;
+  --text-section: 16px;
+  --text-dialog: 18px;
+  --text-title-min: 20px;
+  --text-title-max: 28px;
+  --leading-body: 1.5;
+  --leading-heading: 1.25;
+  --leading-control: 1.4;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-heading: 650;
+  --control-compact: 32px;
+  --control-default: 36px;
+  --control-touch: 44px;
+  /* Canvas labels follow zoom/pin pitch rather than interface typography. */
+  --text-canvas: 11px;
+  --weight-canvas: 600;
+}
+:root[data-theme=dark] {
+  --weight-medium: 450;
+  --weight-semibold: 550;
+  --weight-heading: 600;
+  --weight-canvas: 550;
+}

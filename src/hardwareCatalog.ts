@@ -1,0 +1,19 @@
+export const categories = ['数字输入输出','模拟输入','I²C 传感器','距离与感应','电机控制','显示模块','音频输入','声音输出'] as const;
+
+export const libraryHardware = [
+  { id:'led', name:'LED 指示灯', category:'数字输入输出', aliases:'灯 发光二极管 light', detail:'带串联限流电阻。A 接 GPIO18，K 接 GND。通电后可切换亮灭。' },
+  { id:'button', name:'两脚常开按钮', category:'数字输入输出', aliases:'开关 按键 轻触 switch push button', detail:'SW 接 GPIO47，另一脚接 GND。模拟内部上拉，按下时读到低电平。' },
+  { id:'pot', name:'10 kΩ 电位器', category:'模拟输入', aliases:'旋钮 滑动变阻器 ADC Potentiometer', detail:'两端接 3V3 和 GND，滑动端 W 接 GPIO1。转动旋钮可看模拟 ADC 读数。' },
+  { id:'bme280', name:'BME280 温湿度气压模块', category:'I²C 传感器', aliases:'环境传感器 温度 湿度 气压 I2C', detail:'3.3 V I²C 模块。SDA 接 GPIO41，SCL 接 GPIO42。通电后可读取模拟环境数据。' },
+  { id:'buzzer', name:'3.3 V 有源蜂鸣器模块', category:'声音输出', aliases:'主动蜂鸣器 蜂鸣 报警 beep buzzer', detail:'模拟带驱动电路的高电平触发模块。SIG 接 GPIO17，另接 3V3 和 GND。' },
+  { id:'ldr', name:'光敏电阻模块', category:'模拟输入', aliases:'光照 亮度 LDR 光线 ADC', detail:'3.3 V 光敏分压模块。AO 接 GPIO2，调整模拟光线，观察 ADC 读数。' },
+  { id:'pir', name:'AM312 人体感应模块', category:'距离与感应', aliases:'PIR 红外 运动 检测', detail:'3.3 V 供电。OUT 接 GPIO10，模拟有人经过时观察高低电平。' },
+  { id:'sonar', name:'US-100 超声波测距', category:'距离与感应', aliases:'距离 雷达 超声 Trig Echo', detail:'采用 3.3 V 脉冲模式。TRIG 接 GPIO11，ECHO 接 GPIO12。' },
+  { id:'servo', name:'SG90 微型舵机', category:'电机控制', aliases:'马达 PWM 角度 伺服', detail:'PWM 接 GPIO13，模拟练习用 5V 电源节点。实物用合适的独立电源并与 ESP32 共地。' },
+  {id:'screen', name:'OLED 屏幕', category:'显示模块', aliases:'SSD1306 显示 屏 I2C', detail:'0.91 英寸 OLED。接 3V3、GND，SCL 接 GPIO42，SDA 接 GPIO41。'},
+  {id:'mic', name:'INMP441 麦克风', category:'音频输入', aliases:'拾音 声音 输入 I2S', detail:'数字麦克风。WS、SCK、SD 分别接 GPIO4、GPIO5、GPIO6。'},
+  {id:'amp', name:'MAX98357A 功放', category:'声音输出', aliases:'放大器 声音 I2S', detail:'接 3V3 或 5V 和 GND，DIN、BCLK、LRC 分别接 GPIO7、GPIO15、GPIO16。'},
+  {id:'speaker', name:'喇叭', category:'声音输出', aliases:'扬声器 音响 speaker', detail:'实物两根线接功放 SPK+ 和 SPK−。'}
+] as const;
+
+export type HardwareId = typeof libraryHardware[number]['id'];
