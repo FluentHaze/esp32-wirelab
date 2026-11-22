@@ -9,7 +9,7 @@
 - 原作者：Jhey Tompkins（jh3y）。
 - 原始作品：[Night & Day Toggle](https://codepen.io/jh3y/pen/LYgjpYZ)。
 - 用户提供的参考镜像：[RunJS 示例](https://runjs.work/projects/7884b5)。
-- 项目适配文件：`src/theme-toggle.css`、`src/themeArtwork.ts`。
+- 项目适配文件：`src/theme-toggle.css`、`src/themeArtwork.ts`、`src/assets/theme-artwork.svg`。
 - 修改内容：移除持续装饰，缩为工具栏控件，接入主题缓存、局部样式和减少动态效果模式。
 
 [CodePen 授权说明](https://blog.codepen.io/documentation/licensing/)指出公开 Pen 默认采用 MIT 许可。原作的具体版权声明与导出版本应由发布者核对并保留；当前源码已保留作者和原始链接，不代表这份文档替代完整上游许可文本。

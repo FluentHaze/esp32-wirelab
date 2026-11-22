@@ -47,15 +47,22 @@ export function Dropdown({ id, label, accessibilityLabel, items }: Props) {
     }
 
     const direction = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
-    if (direction === 0 && (!open || !['Home','End'].includes(event.key))) return;
+    if (direction === 0 && (!open || !['Home', 'End'].includes(event.key))) return;
     const buttons = Array.from(menu.current?.querySelectorAll('button') ?? []);
     if (!buttons.length) return;
     event.preventDefault();
     event.stopPropagation();
-    const current = buttons.findIndex(button => button === document.activeElement);
-    const next = event.key === 'Home' ? 0 : event.key === 'End' ? buttons.length - 1 :
-      current < 0 ? (direction > 0 ? 0 : buttons.length - 1) :
-      (current + direction + buttons.length) % buttons.length;
+    const current = buttons.findIndex((button) => button === document.activeElement);
+    const next =
+      event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+          ? buttons.length - 1
+          : current < 0
+            ? direction > 0
+              ? 0
+              : buttons.length - 1
+            : (current + direction + buttons.length) % buttons.length;
     if (open) buttons[next].focus();
     else {
       initialFocus.current = next;
@@ -64,23 +71,58 @@ export function Dropdown({ id, label, accessibilityLabel, items }: Props) {
   }
 
   return (
-    <div ref={root} className="dropdown" onKeyDown={moveFocus} onBlur={event => {
-      if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget)) setOpen(false);
-    }}>
-      <button id={id} ref={trigger} type="button" className="dropdown-trigger" aria-label={accessibilityLabel}
-        aria-controls={id + '-options'} aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen(value => !value)}>
-        {label}<span className="dropdown-chevron" aria-hidden="true" />
+    <div
+      ref={root}
+      className="dropdown"
+      onKeyDown={moveFocus}
+      onBlur={(event) => {
+        if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget))
+          setOpen(false);
+      }}
+    >
+      <button
+        id={id}
+        ref={trigger}
+        type="button"
+        className="dropdown-trigger"
+        aria-label={accessibilityLabel}
+        aria-controls={id + '-options'}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {label}
+        <span
+          className="dropdown-chevron"
+          aria-hidden="true"
+        />
       </button>
-      <div className="dropdown-panel" hidden={!open}>
-        <div id={id + '-options'} ref={menu} className="dropdown-options" role="menu" aria-labelledby={id}>
-          {items.map(item => (
-            <button id={item.id} key={item.key} type="button" className="dropdown-option"
-              role={item.checked === undefined ? 'menuitem' : 'menuitemradio'} aria-checked={item.checked}
-              tabIndex={open ? 0 : -1} onClick={() => {
+      <div
+        className="dropdown-panel"
+        hidden={!open}
+      >
+        <div
+          id={id + '-options'}
+          ref={menu}
+          className="dropdown-options"
+          role="menu"
+          aria-labelledby={id}
+        >
+          {items.map((item) => (
+            <button
+              id={item.id}
+              key={item.key}
+              type="button"
+              className="dropdown-option"
+              role={item.checked === undefined ? 'menuitem' : 'menuitemradio'}
+              aria-checked={item.checked}
+              tabIndex={open ? 0 : -1}
+              onClick={() => {
                 setOpen(false);
                 trigger.current?.focus();
                 item.onSelect();
-              }}>
+              }}
+            >
               <span>{item.label}</span>
             </button>
           ))}

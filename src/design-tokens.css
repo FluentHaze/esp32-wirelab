@@ -33,7 +33,7 @@
   --text-canvas: 11px;
   --weight-canvas: 600;
 }
-:root[data-theme=dark] {
+:root[data-theme='dark'] {
   --weight-medium: 450;
   --weight-semibold: 550;
   --weight-heading: 600;
