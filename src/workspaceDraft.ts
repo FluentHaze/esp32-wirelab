@@ -52,14 +52,19 @@ export function readWorkspaceDraft(): WorkspaceDraft | null {
         (id): id is string =>
           typeof id === 'string' && libraryHardware.some((item) => item.id === id.split('#')[0]),
       ),
-      boardCount:
-        typeof draft.boardCount === 'number' &&
-        Number.isSafeInteger(draft.boardCount) &&
-        draft.boardCount > 0
-          ? draft.boardCount
-          : draft.thirdBoard === true
-            ? 3
-            : 2,
+      boardCount: (() => {
+        if (
+          typeof draft.boardCount === 'number' &&
+          Number.isSafeInteger(draft.boardCount) &&
+          draft.boardCount > 0
+        ) {
+          return draft.boardCount;
+        }
+        if (draft.thirdBoard === true) {
+          return 3;
+        }
+        return 2;
+      })(),
       placements,
       wires: draft.wires.filter(isWire),
       showWires: draft.showWires !== false,

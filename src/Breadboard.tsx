@@ -1,3 +1,4 @@
+import { ComponentArt } from './ComponentArt';
 import { useMemo } from 'react';
 import { partType, boardName, getBoardCells, moduleBounds, parts, type Part } from './catalog';
 
@@ -85,69 +86,17 @@ function Module({ id, part }: { id: string; part: Part }) {
   const width = bounds.x1 - bounds.x0;
   return (
     <button
-      className="module"
+      className="module illustrated-module"
       type="button"
       data-part={instance}
       data-type={id}
       aria-label={part.name + ' 板身'}
       hidden
     >
-      {id === 'servo' && (
-        <span
-          className="servo-arm"
-          aria-hidden="true"
-        />
-      )}
-      {id === 'led' && (
-        <span
-          className="led-lamp"
-          aria-hidden="true"
-        />
-      )}
-      {id === 'speaker' && (
-        <span
-          className="speaker-cone"
-          aria-hidden="true"
-        />
-      )}
-      {id === 'screen' ? (
-        <span
-          className="oled-face"
-          aria-hidden="true"
-        >
-          OLED 128×32
-        </span>
-      ) : (
-        <span className="module-label">
-          {id === 'amp'
-            ? 'MAX98357A'
-            : id === 'led'
-              ? 'LED'
-              : id === 'button'
-                ? '按钮'
-                : id === 'pot'
-                  ? '电位器'
-                  : id === 'buzzer'
-                    ? '蜂鸣器'
-                    : id === 'bme280'
-                      ? 'BME280'
-                      : id === 'ldr'
-                        ? '光敏'
-                        : id === 'pir'
-                          ? 'AM312'
-                          : id === 'sonar'
-                            ? 'US-100'
-                            : id === 'servo'
-                              ? 'SG90'
-                              : part.name}
-        </span>
-      )}
-      {id === 'amp' && (
-        <span
-          className="screw-label"
-          aria-hidden="true"
-        />
-      )}
+      <ComponentArt
+        id={id}
+        onBoard
+      />
       {part.pins.map((pin) => {
         const right =
           ((id === 'esp' || id === 'mic') && pin.dx > 0) || (id === 'amp' && pin.dx === 0);
@@ -215,25 +164,30 @@ export function BreadboardCanvas({
           </div>
           <div className="grid">
             {cells.map((cell) =>
-              cell.kind === 'hole' ? (
-                <button
-                  key={cell.id}
-                  type="button"
-                  className={'hole ' + cell.className}
-                  data-hole={cell.id}
-                  tabIndex={cell.row === 0 && cell.col === 2 ? 0 : -1}
-                  aria-label={cell.label}
-                  aria-pressed="false"
-                />
-              ) : (
-                <span
-                  key={cell.id}
-                  className={cell.className}
-                  aria-hidden="true"
-                >
-                  {cell.label}
-                </span>
-              ),
+              (() => {
+                if (cell.kind === 'hole') {
+                  return (
+                    <button
+                      key={cell.id}
+                      type="button"
+                      className={'hole ' + cell.className}
+                      data-hole={cell.id}
+                      tabIndex={cell.row === 0 && cell.col === 2 ? 0 : -1}
+                      aria-label={cell.label}
+                      aria-pressed="false"
+                    />
+                  );
+                }
+                return (
+                  <span
+                    key={cell.id}
+                    className={cell.className}
+                    aria-hidden="true"
+                  >
+                    {cell.label}
+                  </span>
+                );
+              })(),
             )}
           </div>
         </section>

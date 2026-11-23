@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BreadboardCanvas, PartTray } from './Breadboard';
 import { mountSimulation } from './simulation.js';
 import { baseParts, ensureInstance, partType } from './catalog';
+import { i2cTests } from './hardwareCatalog';
 import { HardwareLibrary } from './HardwareLibrary';
 import { readWorkspaceDraft } from './workspaceDraft';
 import { Plus, Trash2, Cable, Eye, EyeOff, X, Info, Power, Minus, RotateCcw } from 'lucide-react';
@@ -17,11 +18,9 @@ export default function App() {
   const [isDark, setIsDark] = useState(false);
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('esp32-theme');
-    return saved === 'dark' || saved === 'light'
-      ? saved
-      : matchMedia('(prefers-color-scheme: dark)').matches
-        ? 'dark'
-        : 'light';
+    if (saved === 'dark' || saved === 'light') return saved;
+    if (matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+    return 'light';
   });
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -450,23 +449,26 @@ export default function App() {
                   role="status"
                 ></p>
               </div>
-              <div
-                id="bme280-test"
-                data-test-panel="bme280"
-                hidden
-              >
-                <h3>BME280 · I²C</h3>
-                <button
-                  id="bme280-demo"
-                  disabled
+              {i2cTests.map(({ id, label, action }) => (
+                <div
+                  key={id}
+                  id={id + '-test'}
+                  data-test-panel={id}
+                  hidden
                 >
-                  读取传感器
-                </button>
-                <p
-                  id="bme280-result"
-                  role="status"
-                ></p>
-              </div>
+                  <h3>{label} · I²C</h3>
+                  <button
+                    id={id + '-demo'}
+                    disabled
+                  >
+                    {action}
+                  </button>
+                  <p
+                    id={id + '-result'}
+                    role="status"
+                  ></p>
+                </div>
+              ))}
               <div
                 id="ldr-test"
                 data-test-panel="ldr"

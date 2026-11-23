@@ -7,6 +7,7 @@ export const categories = [
   '显示模块',
   '音频输入',
   '声音输出',
+  '时钟模块',
 ] as const;
 
 export const libraryHardware = [
@@ -101,6 +102,44 @@ export const libraryHardware = [
     aliases: '扬声器 音响 speaker',
     detail: '实物两根线接功放 SPK+ 和 SPK−。',
   },
+  {
+    id: 'sht31',
+    name: 'SHT31 温湿度模块',
+    category: 'I²C 传感器',
+    aliases: '温度 湿度 I2C',
+    detail: 'VIN 接 3V3，SCL 接 GPIO42，SDA 接 GPIO41。接线后可模拟通电读取。',
+  },
+  {
+    id: 'veml7700',
+    name: 'VEML7700 数字光照模块',
+    category: 'I²C 传感器',
+    aliases: '照度 亮度 Lux I2C',
+    detail: 'VIN 接 3V3，SCL 接 GPIO42，SDA 接 GPIO41。接线后可模拟通电读取。',
+  },
+  {
+    id: 'ds3231',
+    name: 'DS3231 实时时钟模块',
+    category: '时钟模块',
+    aliases: '时钟 RTC 时间 I2C',
+    detail: '四针 I²C 接口版本。VCC 接 3V3，SDA 接 GPIO41，SCL 接 GPIO42。接线后可模拟通电读取。',
+  },
 ] as const;
 
 export type HardwareId = (typeof libraryHardware)[number]['id'];
+
+export const i2cTests = [
+  {
+    id: 'bme280',
+    label: 'BME280',
+    action: '读取传感器',
+    reading: 'I²C 0x76 · 模拟数据 24.5 °C · 48% RH · 1013 hPa',
+  },
+  {
+    id: 'sht31',
+    label: 'SHT31',
+    action: '读取温湿度',
+    reading: 'I²C 0x44 · 模拟温度 24.5 °C · 相对湿度 48% RH',
+  },
+  { id: 'veml7700', label: 'VEML7700', action: '读取照度', reading: 'I²C 0x10 · 模拟照度 320 lx' },
+  { id: 'ds3231', label: 'DS3231', action: '读取时钟', reading: 'I²C 0x68 · 模拟时间 12:34:56' },
+] as const;

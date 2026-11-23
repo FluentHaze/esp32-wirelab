@@ -1563,47 +1563,39 @@ html:has(.workbench-shell dialog[open]) {
   color: var(--muted);
 }
 .component-art {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  align-self: center;
-  width: 95%;
-  height: 48px;
-  background: #35545b;
-  border-radius: 5px;
-  color: #e9f2ee;
-  font: var(--text-canvas) var(--font-mono);
-  padding: 5px;
-  margin: 2px 0;
+  display: block;
+  width: 100%;
+  height: 80px;
 }
-.component-art i {
-  height: 28px;
-  width: 5px;
-  background: repeating-linear-gradient(#dfb16a 0 4px, transparent 4px 7px);
+.component-art .art-body {
+  fill: var(--art-body, #35545b);
+}
+.component-art .art-pin {
+  fill: #f8c979;
+  stroke: #382a20;
+  stroke-width: 0.1;
+}
+.component-art text {
+  fill: #e9f2ee;
+  font: 1px var(--font-mono);
 }
 .art-mic {
-  border-radius: 50%;
-  width: 52px;
-  background: #315247;
+  --art-body: #315247;
 }
 .art-amp {
-  background: #57436a;
+  --art-body: #57436a;
 }
 .art-screen {
-  background: #101d24;
-  color: #85dfff;
+  --art-body: #101d24;
 }
 .art-speaker {
-  border-radius: 30px;
-  background: #433d34;
+  --art-body: #433d34;
 }
 .art-led {
-  background: #653b3e;
-  width: 52px;
-  border-radius: 22px;
+  --art-body: #a94d50;
 }
 .art-servo {
-  background: #31558a;
+  --art-body: #31558a;
 }
 .component-picker > p {
   font-size: var(--text-caption);
@@ -1930,4 +1922,118 @@ body,
 .mainboard-copy small {
   font-size: var(--text-caption);
   color: var(--muted);
+}
+
+.mainboard-card .component-art {
+  width: 112px;
+  height: 68px;
+  flex: none;
+}
+.module.illustrated-module,
+.placement-outline:has(.component-art) {
+  background: transparent;
+  border-width: 0;
+  padding: 0;
+  overflow: visible;
+}
+.module.illustrated-module:is(.module-selected, :focus-visible),
+.placement-outline:has(.component-art) {
+  outline: 1px solid var(--accent);
+}
+.component-art--board {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.art-esp {
+  --art-body: #273433;
+}
+.art-lead {
+  stroke: #a8b3ae;
+  stroke-width: 0.12;
+  fill: none;
+}
+.art-led-lens {
+  fill: #be414c;
+  stroke: #ef9094;
+  stroke-width: 0.08;
+}
+.art-led-rim {
+  stroke: #a22e39;
+  stroke-width: 0.21;
+}
+.art-highlight {
+  fill: none;
+  stroke: #ffd2d2;
+  stroke-width: 0.11;
+  stroke-linecap: round;
+}
+.led-lit .art-led-lens {
+  fill: #ff5967;
+  filter: drop-shadow(0 0 3px #ff4848);
+}
+.art-speaker-rim {
+  fill: #575d60;
+  stroke: #9ca6a8;
+  stroke-width: 0.09;
+}
+.art-speaker-cone {
+  fill: #23292b;
+  stroke: #131819;
+  stroke-width: 0.1;
+}
+.art-speaker-cap {
+  fill: #464f53;
+  stroke: #677275;
+  stroke-width: 0.06;
+}
+.art-pcb {
+  stroke: #132828;
+  stroke-width: 0.07;
+}
+.art-package {
+  fill: #20292d;
+  stroke: #738481;
+  stroke-width: 0.08;
+}
+.art-metal,
+.art-shield {
+  fill: #9ca8a4;
+  stroke: #d0dad4;
+  stroke-width: 0.08;
+}
+.art-shield {
+  fill: #acb6b0;
+}
+.component-art .art-shield-text {
+  fill: #263330;
+}
+.art-engraving,
+.art-contacts,
+.art-sensor-trace,
+.art-antenna {
+  fill: none;
+  stroke-width: 0.09;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.art-engraving {
+  stroke: #435253;
+}
+.art-contacts {
+  stroke: #aebbb4;
+}
+.art-sensor-trace,
+.art-antenna {
+  stroke: #cda368;
+}
+.art-port {
+  fill: #0b1315;
+}
+.switch-pressed .art-detail .art-metal,
+.pir-active .art-detail .art-metal {
+  fill: #86b29a;
 }

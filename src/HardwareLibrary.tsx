@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Plus, X } from 'lucide-react';
+import { ComponentArt } from './ComponentArt';
 import { Dropdown } from './Dropdown';
-import mainboardArt from './assets/esp32-s3.svg';
 
 import { categories, libraryHardware, type HardwareId } from './hardwareCatalog';
 
@@ -95,12 +95,7 @@ export function HardwareLibrary({ added, onAdd, openInitially, onMainboard }: Pr
             setOpen(false);
           }}
         >
-          <img
-            src={mainboardArt}
-            width="112"
-            height="68"
-            alt=""
-          />
+          <ComponentArt id="esp" />
           <span className="mainboard-copy">
             <strong>ESP32-S3 主板</strong>
             <small>N16R8 · 双 USB-C</small>
@@ -137,59 +132,47 @@ export function HardwareLibrary({ added, onAdd, openInitially, onMainboard }: Pr
             />
           </div>
         </div>
-        {matches.length ? (
-          <ul className="hardware-results">
-            {matches.map((item) => {
-              const count = added.filter((id) => id.split('#')[0] === item.id).length;
-              return (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className="component-card"
-                    aria-label={'放置' + item.name}
-                    onClick={() => {
-                      onAdd(item.id);
-                      setOpen(false);
-                    }}
-                  >
-                    <span
-                      className={'component-art art-' + item.id}
-                      aria-hidden="true"
-                    >
-                      <i />
-                      <b>
-                        {item.id === 'screen'
-                          ? '◉ OLED'
-                          : item.id === 'mic'
-                            ? '●'
-                            : item.id === 'speaker'
-                              ? '◉'
-                              : item.id === 'led'
-                                ? '●'
-                                : item.id.toUpperCase()}
-                      </b>
-                      <i />
-                    </span>
-                    <span>
-                      <strong>{item.name}</strong>
-                      <small>
-                        {item.category}
-                        {count ? ' · 已放置 ' + count + ' 个' : ''}
-                      </small>
-                    </span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        ) : (
-          <p
-            className="hardware-empty"
-            role="status"
-          >
-            没有匹配的硬件。试试其他分类或名称。
-          </p>
-        )}
+        {(() => {
+          if (matches.length) {
+            return (
+              <ul className="hardware-results">
+                {matches.map((item) => {
+                  const count = added.filter((id) => id.split('#')[0] === item.id).length;
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        className="component-card"
+                        aria-label={'放置' + item.name}
+                        onClick={() => {
+                          onAdd(item.id);
+                          setOpen(false);
+                        }}
+                      >
+                        <ComponentArt id={item.id} />
+                        <span>
+                          <strong>{item.name}</strong>
+                          <small>
+                            {item.category}
+                            {count ? ' · 已放置 ' + count + ' 个' : ''}
+                          </small>
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            );
+          }
+          return (
+            <p
+              className="hardware-empty"
+              role="status"
+            >
+              没有匹配的硬件。试试其他分类或名称。
+            </p>
+          );
+        })()}
       </section>
     </>
   );

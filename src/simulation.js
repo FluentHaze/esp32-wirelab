@@ -14,6 +14,7 @@ import {
   boardX,
   crossesBoards,
 } from './catalog.js';
+import { i2cTests } from './hardwareCatalog.js';
 import { nearestAnchor } from './placement.js';
 import { saveWorkspaceDraft } from './workspaceDraft.js';
 import replyUrl from './voice-reply.m4a?url';
@@ -345,13 +346,18 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
         '给 ' +
           parts.get(part).name +
           ' 选一个起始孔。' +
-          (part === 'esp'
-            ? '单板从 A 或 B 列起，跨板从有右侧相邻板的 I 或 J 列起。'
-            : part === 'mic'
-              ? '麦克风从 D 或 E 列起，双排跨过中槽。'
-              : part === 'amp'
-                ? '功放从 F 或 G 列起，绿色端子位于中槽另一侧。'
-                : '其余针脚沿所在列向下排列。'),
+          (() => {
+            if (part === 'esp') {
+              return '单板从 A 或 B 列起，跨板从有右侧相邻板的 I 或 J 列起。';
+            }
+            if (part === 'mic') {
+              return '麦克风从 D 或 E 列起，双排跨过中槽。';
+            }
+            if (part === 'amp') {
+              return '功放从 F 或 G 列起，绿色端子位于中槽另一侧。';
+            }
+            return '其余针脚沿所在列向下排列。';
+          })(),
       );
     else status('已取消摆放。');
     if (state.mode && state.placements.has(part)) showTest(part === 'amp' ? 'speaker' : part);
@@ -422,15 +428,21 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
         '这里放不下 ' +
           parts.get(part).name +
           '。' +
-          (part === 'esp'
-            ? '在第 1 到 9 行选 A/B 列，或从 I/J 列跨到右侧相邻板。请检查板身有无遮挡。'
-            : part === 'mic'
-              ? '请选择 D 或 E 列，并给圆形板身和两排脚留出空间。'
-              : part === 'amp'
-                ? '请选择 F 或 G 列，并给功放两侧的针脚留出空间。'
-                : part === 'screen'
-                  ? '请确认四个针脚都有空孔，并给屏幕板身留出空间。'
-                  : '请换一个有足够连续空孔的位置。'),
+          (() => {
+            if (part === 'esp') {
+              return '在第 1 到 9 行选 A/B 列，或从 I/J 列跨到右侧相邻板。请检查板身有无遮挡。';
+            }
+            if (part === 'mic') {
+              return '请选择 D 或 E 列，并给圆形板身和两排脚留出空间。';
+            }
+            if (part === 'amp') {
+              return '请选择 F 或 G 列，并给功放两侧的针脚留出空间。';
+            }
+            if (part === 'screen') {
+              return '请确认四个针脚都有空孔，并给屏幕板身留出空间。';
+            }
+            return '请换一个有足够连续空孔的位置。';
+          })(),
       );
       return;
     }
@@ -598,20 +610,28 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     const hole = holes.get(state.selected);
     byId('cancel').hidden = !state.mode && !state.start && !state.inspectedPart;
     byId('selection-actions').hidden = byId('cancel').hidden && byId('module-details').hidden;
-    byId('inspect').textContent = pin
-      ? parts.get(pin.part).name +
-        ' ' +
-        pin.label +
-        ' · ' +
-        pin.description +
-        (pin.expected === undefined ? '' : '。可接 ' + sourceOptions(pin) + '。')
-      : state.inspectedPart
-        ? parts.get(state.inspectedPart).name + ' · 按住板身拖动，右键查看针脚。'
-        : hole
-          ? hole.label + ' 与标出的孔属于同一导通组。'
-          : device
-            ? '按 Delete 删除设备和对应跳线。'
-            : '';
+    byId('inspect').textContent = (() => {
+      if (pin) {
+        return (
+          parts.get(pin.part).name +
+          ' ' +
+          pin.label +
+          ' · ' +
+          pin.description +
+          (pin.expected === undefined ? '' : '。可接 ' + sourceOptions(pin) + '。')
+        );
+      }
+      if (state.inspectedPart) {
+        return parts.get(state.inspectedPart).name + ' · 按住板身拖动，右键查看针脚。';
+      }
+      if (hole) {
+        return hole.label + ' 与标出的孔属于同一导通组。';
+      }
+      if (device) {
+        return '按 Delete 删除设备和对应跳线。';
+      }
+      return '';
+    })();
     const selectedNet = state.selected ? network.labels.get(network.net(state.selected)) : null;
     if (selectedNet) byId('inspect').textContent += ' · ' + selectedNet.name;
     const remove = byId('remove-part');
@@ -670,7 +690,11 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
         copy.className = 'module pin-label-copy';
         copy.dataset.type = body.dataset.type;
         copy.style.cssText = body.style.cssText;
-        copy.style.setProperty('--pin-label-surface', getComputedStyle(body).backgroundColor);
+        const boardSurface = body.querySelector('.art-body');
+        copy.style.setProperty(
+          '--pin-label-surface',
+          boardSurface ? getComputedStyle(boardSurface).fill : '#31413e',
+        );
         for (const label of body.querySelectorAll('.pin-name')) copy.append(label.cloneNode(true));
         pinLabels.append(copy);
       }
@@ -824,7 +848,15 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     if (!key) return;
     outline.dataset.part = part;
     outline.classList.toggle('invalid', !valid);
-    outline.textContent = valid ? parts.get(part).name + ' · ' + anchor.label : '这里放不下';
+    const art = modules.get(part).querySelector('.component-art');
+    if (valid && art) {
+      const previewArt = art.cloneNode(true);
+      const screenText = previewArt.querySelector('.art-oled-text');
+      if (screenText) screenText.textContent = 'OLED 128×32';
+      outline.replaceChildren(previewArt);
+    } else {
+      outline.textContent = '这里放不下';
+    }
     positionPart(outline, part, anchor);
     outline.style.maxHeight = valid
       ? ''
@@ -1138,7 +1170,7 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
       button,
       pot: problems('pot'),
       buzzer: problems('buzzer'),
-      bme280: problems('bme280'),
+      ...Object.fromEntries(i2cTests.map(({ id }) => [id, problems(id)])),
       ldr: problems('ldr'),
       pir: problems('pir'),
       sonar: problems('sonar'),
@@ -1150,7 +1182,7 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     button: '按钮',
     pot: '电位器',
     buzzer: '蜂鸣器',
-    bme280: 'BME280',
+    ...Object.fromEntries(i2cTests.map(({ id, label }) => [id, label])),
     ldr: '光敏',
     pir: '人体感应',
     sonar: '测距',
@@ -1192,9 +1224,25 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
         ready && !instanceCheck[type].length && (type !== 'speaker' || !instanceCheck.amp.length);
       if (ok) passed++;
       const button = document.createElement('button');
-      const result = !state.tested ? '待通电' : ok ? '通过' : '待检查';
+      const result = (() => {
+        if (!state.tested) {
+          return '待通电';
+        }
+        if (ok) {
+          return '通过';
+        }
+        return '待检查';
+      })();
       button.dataset.test = id;
-      button.dataset.result = !state.tested ? 'idle' : ok ? 'pass' : 'check';
+      button.dataset.result = (() => {
+        if (!state.tested) {
+          return 'idle';
+        }
+        if (ok) {
+          return 'pass';
+        }
+        return 'check';
+      })();
       button.textContent = testLabels[type] + (id.includes('#') ? ' #' + id.split('#')[1] : '');
       button.setAttribute('aria-label', button.textContent + '，' + result);
       button.title = result;
@@ -1222,7 +1270,7 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
   }
   function showOLED(text) {
     byId('display').textContent = text;
-    const screen = moduleFor('screen')?.querySelector('.oled-face');
+    const screen = moduleFor('screen')?.querySelector('.art-oled-text');
     if (screen) screen.textContent = text.replace(/^◉ /, '');
   }
   function renderResults() {
@@ -1232,30 +1280,48 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     const ready = state.tested && state.placements.has('esp') && !check.conflicts.length;
     const voiceActive = ['mic', 'amp', 'speaker'].some((part) => state.placements.has(part));
     showOLED(
-      ready && !check.screen.length ? (voiceActive ? '◉ 小智在线' : '◉ OLED 已就绪') : '屏幕熄灭',
+      (() => {
+        if (ready && !check.screen.length) {
+          if (voiceActive) {
+            return '◉ 小智在线';
+          }
+          return '◉ OLED 已就绪';
+        }
+        return '屏幕熄灭';
+      })(),
     );
     for (const [id, label] of [
       ['screen', '屏幕已点亮'],
       ['mic', '麦克风就绪'],
       ['speaker', '喇叭两根线已接好'],
     ]) {
-      const text = !state.tested
-        ? '未通电'
-        : !state.placements.has('esp')
-          ? '请先放置 ESP32-S3'
-          : check.conflicts.length
-            ? '电路冲突，检查接线'
-            : check[id].join('、') || label;
+      const text = (() => {
+        if (!state.tested) {
+          return '未通电';
+        }
+        if (!state.placements.has('esp')) {
+          return '请先放置 ESP32-S3';
+        }
+        if (check.conflicts.length) {
+          return '电路冲突，检查接线';
+        }
+        return check[id].join('、') || label;
+      })();
       byId(id + '-result').textContent = text;
     }
     byId('mic-demo').disabled = !ready || Boolean(check.mic.length);
-    byId('amp-result').textContent = !state.tested
-      ? '功放输入待检查'
-      : !ready
-        ? '功放输入尚未通过检测'
-        : check.amp.length
-          ? '功放输入 · ' + check.amp.join('、')
-          : '功放输入 · 电源与音频三线已接好';
+    byId('amp-result').textContent = (() => {
+      if (!state.tested) {
+        return '功放输入待检查';
+      }
+      if (!ready) {
+        return '功放输入尚未通过检测';
+      }
+      if (check.amp.length) {
+        return '功放输入 · ' + check.amp.join('、');
+      }
+      return '功放输入 · 电源与音频三线已接好';
+    })();
     byId('speaker-demo').disabled = !ready || Boolean(check.amp.length || check.speaker.length);
     renderHardwareEffects(check, ready);
     renderPeripheralTests(check, ready);
@@ -1280,13 +1346,23 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     const waiting = state.tested ? '还不能测试，请检查主板与短接' : '等待模拟通电';
     byId('led-result').textContent =
       'LED · ' +
-      (!ready ? waiting : check.led.join('、') || (light ? '已点亮' : '已接好，当前熄灭'));
+      (() => {
+        if (!ready) {
+          return waiting;
+        }
+        return check.led.join('、') || (light ? '已点亮' : '已接好，当前熄灭');
+      })();
     byId('button-result').textContent =
       '按钮 · ' +
-      (!ready
-        ? waiting
-        : check.button.join('、') ||
-          (state.buttonPressed ? '按下，GPIO47 为低电平' : '松开，GPIO47 由上拉保持高电平'));
+      (() => {
+        if (!ready) {
+          return waiting;
+        }
+        return (
+          check.button.join('、') ||
+          (state.buttonPressed ? '按下，GPIO47 为低电平' : '松开，GPIO47 由上拉保持高电平')
+        );
+      })();
   }
   function updateHardwareEffects() {
     const check = checkCircuit();
@@ -1333,7 +1409,7 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
   const peripheralTests = [
     ['pot', 'pot-value', '调整旋钮，观察理想读数', updatePotReading],
     ['buzzer', 'buzzer-demo', '已接好，点击输出高电平'],
-    ['bme280', 'bme280-demo', '已接好，等待 I²C 读取'],
+    ...i2cTests.map(({ id }) => [id, id + '-demo', '已接好，等待 I²C 读取']),
     ['ldr', 'ldr-value', '调整光照', updateLightReading],
     ['pir', 'pir-demo', '无人经过，GPIO10 为低电平'],
     ['sonar', 'sonar-value', '调整目标距离', updateDistanceReading],
@@ -1352,20 +1428,26 @@ export function mountSimulation(root, draft, setBoardCount, openDetails, setDevi
     for (const [part, control, readyText, update] of peripheralTests) {
       const canTest = ready && !check[part].length;
       byId(control).disabled = !canTest;
-      byId(part + '-result').textContent = !state.tested
-        ? '等待模拟通电'
-        : !ready
-          ? '请先检查主板和短接'
-          : check[part].join('、') || readyText;
+      byId(part + '-result').textContent = (() => {
+        if (!state.tested) {
+          return '等待模拟通电';
+        }
+        if (!ready) {
+          return '请先检查主板和短接';
+        }
+        return check[part].join('、') || readyText;
+      })();
       if (canTest) update?.();
     }
   }
   for (const [, control, , update] of peripheralTests) {
     if (update) byId(control).addEventListener('input', update);
   }
-  byId('bme280-demo').onclick = () => {
-    byId('bme280-result').textContent = 'I²C 0x76 · 模拟数据 24.5 °C · 48% RH · 1013 hPa';
-  };
+  for (const { id, reading } of i2cTests) {
+    byId(id + '-demo').onclick = () => {
+      byId(id + '-result').textContent = reading;
+    };
+  }
   byId('buzzer-demo').onclick = () => playDemoAudio(buzzerAudio, byId('buzzer-result'));
   function togglePower() {
     stopDrag();

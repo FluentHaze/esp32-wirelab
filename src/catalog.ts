@@ -184,7 +184,15 @@ const columns = ['−', '+', 'A', 'B', 'C', 'D', 'E', '', 'F', 'G', 'H', 'I', 'J
 const gridX = (col: number) => (col > 7 ? col + 1 : col);
 const colAt = (anchorCol: number, dx: number) => {
   const x = gridX(anchorCol) + dx;
-  return x >= 9 ? x - 1 : x === 7 || x === 8 ? -1 : x;
+  return (() => {
+    if (x >= 9) {
+      return x - 1;
+    }
+    if (x === 7 || x === 8) {
+      return -1;
+    }
+    return x;
+  })();
 };
 const sourceLabel = (value: PinValue) => (typeof value === 'number' ? 'GPIO' + value : value);
 const parts = new Map<string, Part>([
@@ -372,6 +380,23 @@ parts.set('servo', {
     { dx: 0, dy: 2, label: 'GND', expected: 'GND', description: '舵机电源地与 ESP32 共地' },
   ],
 });
+for (const [id, name, pinLabels] of [
+  ['sht31', 'SHT31 温湿度模块', ['VIN', 'GND', 'SCL', 'SDA', 'ADR', 'RST', 'ALR']],
+  ['veml7700', 'VEML7700 数字光照模块', ['VIN', '3Vo', 'GND', 'SCL', 'SDA']],
+  ['ds3231', 'DS3231 实时时钟模块', ['GND', 'VCC', 'SDA', 'SCL']],
+] as const) {
+  const bus: Record<string, PinValue> = { VIN: '3V3', VCC: '3V3', GND: 'GND', SCL: 42, SDA: 41 };
+  parts.set(id, {
+    name,
+    pins: pinLabels.map((label, dy) => ({
+      dx: 0,
+      dy,
+      label,
+      expected: bus[label],
+      description: bus[label] === undefined ? '辅助引脚，本练习留空。' : pinDescription(bus[label]),
+    })),
+  });
+}
 const partType = (id: string) => id.split('#')[0];
 function ensureInstance(id: string) {
   if (parts.has(id)) return;
@@ -402,7 +427,20 @@ function moduleBounds(part: string, anchor: Pick<Position, 'col' | 'row'>) {
   if (part === 'amp') return { x0: x - 4.35, x1: x + 0.35, y0: y - 0.45, y1: y + pinRows + 0.45 };
   if (part === 'led' || part === 'button')
     return { x0: x + 0.18, x1: x + 3.5, y0: y - 0.42, y1: y + pinRows + 0.42 };
-  if (['pot', 'buzzer', 'bme280', 'ldr', 'pir', 'sonar', 'servo'].includes(part))
+  if (
+    [
+      'pot',
+      'buzzer',
+      'bme280',
+      'ldr',
+      'pir',
+      'sonar',
+      'servo',
+      'sht31',
+      'veml7700',
+      'ds3231',
+    ].includes(part)
+  )
     return { x0: x + 0.18, x1: x + 5.1, y0: y - 0.42, y1: y + pinRows + 0.42 };
   if (part === 'speaker')
     return { x0: x + 0.2, x1: x + 3.85, y0: y - 0.37, y1: y + pinRows + 0.37 };
@@ -421,7 +459,15 @@ function stripId(board: number, col: number, row: number) {
   return board + ':' + (col < 7 ? 'left' : 'right') + ':' + row;
 }
 function address(board: number, col: number, row: number) {
-  const name = col < 2 ? '左' + columns[col] : col > 12 ? '右' + columns[col] : columns[col];
+  const name = (() => {
+    if (col < 2) {
+      return '左' + columns[col];
+    }
+    if (col > 12) {
+      return '右' + columns[col];
+    }
+    return columns[col];
+  })();
   return boardName(board) + ' ' + name + (row + 1);
 }
 
@@ -432,7 +478,15 @@ function getBoardCells(board: number) {
       const rail = col === 0 || col === 1 || col === 13 || col === 14;
       const railGap = rail && row >= 0 && row % 6 === 5;
       if (row === -1 || col === -1 || !columns[col] || railGap) {
-        const label = row === -1 ? columns[col] || '' : col === -1 ? String(row + 1) : '';
+        const label = (() => {
+          if (row === -1) {
+            return columns[col] || '';
+          }
+          if (col === -1) {
+            return String(row + 1);
+          }
+          return '';
+        })();
         cells.push({
           kind: 'header',
           id: holeId(board, col, row),
@@ -450,7 +504,15 @@ function getBoardCells(board: number) {
         row,
         strip: stripId(board, col, row),
         label: address(board, col, row),
-        className: rail ? (columns[col] === '+' ? 'rail-plus' : 'rail-minus') : 'group-strip',
+        className: (() => {
+          if (rail) {
+            if (columns[col] === '+') {
+              return 'rail-plus';
+            }
+            return 'rail-minus';
+          }
+          return 'group-strip';
+        })(),
       });
     }
   }

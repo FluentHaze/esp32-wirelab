@@ -46,23 +46,24 @@ export function Dropdown({ id, label, accessibilityLabel, items }: Props) {
       return;
     }
 
-    const direction = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0;
+    let direction = 0;
+    if (event.key === 'ArrowDown') direction = 1;
+    else if (event.key === 'ArrowUp') direction = -1;
     if (direction === 0 && (!open || !['Home', 'End'].includes(event.key))) return;
     const buttons = Array.from(menu.current?.querySelectorAll('button') ?? []);
     if (!buttons.length) return;
     event.preventDefault();
     event.stopPropagation();
     const current = buttons.findIndex((button) => button === document.activeElement);
-    const next =
-      event.key === 'Home'
-        ? 0
-        : event.key === 'End'
-          ? buttons.length - 1
-          : current < 0
-            ? direction > 0
-              ? 0
-              : buttons.length - 1
-            : (current + direction + buttons.length) % buttons.length;
+    let next = (current + direction + buttons.length) % buttons.length;
+    if (event.key === 'Home') {
+      next = 0;
+    } else if (event.key === 'End') {
+      next = buttons.length - 1;
+    } else if (current < 0) {
+      next = buttons.length - 1;
+      if (direction > 0) next = 0;
+    }
     if (open) buttons[next].focus();
     else {
       initialFocus.current = next;
