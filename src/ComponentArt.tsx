@@ -1,4 +1,4 @@
-import { moduleBounds, parts } from './catalog';
+import { moduleBounds, parts, pinLabelSide, pinLabelText } from './catalog';
 
 const markings: Record<string, string> = {
   esp: 'ESP32-S3',
@@ -119,7 +119,6 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
   const pins = parts.get(id)!.pins;
   const width = x1 - x0;
   const height = y1 - y0;
-  const x = (x0 + x1) / 2;
   const y = (y0 + y1) / 2;
   const radius = Math.min(width, height) / 2;
   const left = Math.min(x0, ...pins.map(({ dx }) => dx));
@@ -130,9 +129,18 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
   const marking = markings[id];
   const display = id === 'screen';
   const controller = id === 'esp';
-  const detailX = x + (pins.every(({ dx }) => dx === 0) ? width * 0.15 : 0);
+  // Reserve the silkscreen lanes before laying out components or model names.
+  let detailLeft = x0 + 0.15;
+  let detailRight = x1 - 0.15;
+  for (const pin of pins) {
+    const clearance = 0.52 + 0.31 * pinLabelText(id, pin).length;
+    if (pinLabelSide(id, pin) === 'right') detailRight = Math.min(detailRight, pin.dx - clearance);
+    else detailLeft = Math.max(detailLeft, pin.dx + clearance);
+  }
+  const detailWidth = detailRight - detailLeft;
+  const detailX = (detailLeft + detailRight) / 2;
   const detailY = y - (marking ? height * 0.12 : 0);
-  const detailScale = Math.min(height * 0.46, width * (id === 'sonar' ? 0.24 : 0.27), 1.35);
+  const detailScale = Math.min(height * 0.46, detailWidth / (id === 'sonar' ? 2.65 : 1.65), 1.35);
 
   return (
     <svg
@@ -146,11 +154,11 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
             <path
               key={label}
               className="art-lead"
-              d={`M ${dx} ${dy} H ${x}`}
+              d={`M ${dx} ${dy} H ${detailX}`}
             />
           ))}
           {id === 'led' ? (
-            <g transform={`translate(${x + radius * 0.22} ${y}) scale(${radius})`}>
+            <g transform={`translate(${detailX} ${y}) scale(${radius})`}>
               <path
                 className="art-led-lens"
                 d="M-.8-.83H0a.83.83 0 0 1 0 1.66h-.8z"
@@ -168,19 +176,19 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
             <>
               <circle
                 className="art-speaker-rim"
-                cx={x}
+                cx={detailX}
                 cy={y}
                 r={radius * 0.96}
               />
               <circle
                 className="art-speaker-cone"
-                cx={x}
+                cx={detailX}
                 cy={y}
                 r={radius * 0.72}
               />
               <circle
                 className="art-speaker-cap"
-                cx={x}
+                cx={detailX}
                 cy={y}
                 r={radius * 0.31}
               />
@@ -201,9 +209,9 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
             <>
               <rect
                 className={controller ? 'art-shield' : 'art-package'}
-                x={x0 + width * 0.23}
+                x={detailLeft}
                 y={y0 + height * (controller ? 0.17 : 0.13)}
-                width={width * 0.63}
+                width={detailWidth}
                 height={height * (controller ? 0.32 : 0.74)}
                 rx={0.18}
               />
@@ -211,7 +219,7 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
                 <>
                   <rect
                     className="art-metal"
-                    x={x - 1.3}
+                    x={detailX - 1.3}
                     y={y1 - 1.5}
                     width={2.6}
                     height={1.44}
@@ -219,7 +227,7 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
                   />
                   <rect
                     className="art-package"
-                    x={x - 0.96}
+                    x={detailX - 0.96}
                     y={y1 - 0.52}
                     width={1.92}
                     height={0.29}
@@ -227,7 +235,7 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
                   />
                   <path
                     className="art-antenna"
-                    d={`M${x - 2} ${y0 + 2.25}v-1.15h.8v.7h.8v-.7h.8v.7h.8v-.7h.8v1.15`}
+                    d={`M${detailX - 2} ${y0 + 2.25}v-1.15h.8v.7h.8v-.7h.8v.7h.8v-.7h.8v1.15`}
                   />
                 </>
               )}
@@ -248,9 +256,9 @@ export function ComponentArt({ id, onBoard = false }: { id: string; onBoard?: bo
                   ? 0.7
                   : controller
                     ? 0.76
-                    : Math.min(0.53, (width * 0.55) / (marking.length * 0.7)),
+                    : Math.min(0.53, detailWidth / (marking.length * 0.7)),
               }}
-              x={display || controller ? x0 + width * 0.545 : detailX}
+              x={display || controller ? detailX : detailX}
               y={display ? y : controller ? y0 + height * 0.32 : y1 - height * 0.15}
               textAnchor="middle"
               dominantBaseline="central"

@@ -416,6 +416,16 @@ function footprintHole(part: string, anchor: Position, pin: Pin) {
     anchor.row + pin.dy,
   );
 }
+function pinLabelSide(part: string, pin: Pin) {
+  return ((part === 'esp' || part === 'mic') && pin.dx > 0) || (part === 'amp' && pin.dx === 0)
+    ? 'right'
+    : 'left';
+}
+
+function pinLabelText(part: string, pin: Pin) {
+  return part === 'esp' ? pin.label.replace('GPIO', 'IO') : pin.label;
+}
+
 function moduleBounds(part: string, anchor: Pick<Position, 'col' | 'row'>) {
   part = partType(part);
   const x = gridX(anchor.col);
@@ -534,6 +544,8 @@ export {
   holeId,
   footprintHole,
   moduleBounds,
+  pinLabelSide,
+  pinLabelText,
   worldBounds,
   boardX,
   crossesBoards,

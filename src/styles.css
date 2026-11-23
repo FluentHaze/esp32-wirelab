@@ -2037,3 +2037,11 @@ body,
 .pir-active .art-detail .art-metal {
   fill: #86b29a;
 }
+
+.module.illustrated-module .pin-name,
+.module.pin-label-copy .pin-name {
+  font-size: clamp(7px, calc(var(--pitch) * 0.4), 12px);
+}
+.canvas .module.pin-label-copy {
+  overflow: visible;
+}

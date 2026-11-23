@@ -1,6 +1,15 @@
 import { ComponentArt } from './ComponentArt';
 import { useMemo } from 'react';
-import { partType, boardName, getBoardCells, moduleBounds, parts, type Part } from './catalog';
+import {
+  partType,
+  boardName,
+  getBoardCells,
+  moduleBounds,
+  pinLabelSide,
+  pinLabelText,
+  parts,
+  type Part,
+} from './catalog';
 
 const trayLabels: Record<string, string> = {
   button: '常开按钮',
@@ -98,18 +107,17 @@ function Module({ id, part }: { id: string; part: Part }) {
         onBoard
       />
       {part.pins.map((pin) => {
-        const right =
-          ((id === 'esp' || id === 'mic') && pin.dx > 0) || (id === 'amp' && pin.dx === 0);
-        const label = id === 'esp' ? pin.label.replace('GPIO', 'IO') : pin.label;
-        const pinInset = right ? bounds.x1 - pin.dx : pin.dx - bounds.x0;
-        const labelInset = 'calc(' + (pinInset / width) * 100 + '% + 8px)';
+        const side = pinLabelSide(id, pin);
+        const label = pinLabelText(id, pin);
+        const pinInset = side === 'right' ? bounds.x1 - pin.dx : pin.dx - bounds.x0;
+        const labelInset = 'calc(' + (pinInset / width) * 100 + '% + var(--pitch) * 0.32)';
         return (
           <span
-            className={right ? 'pin-name pin-name--right' : 'pin-name'}
+            className={side === 'right' ? 'pin-name pin-name--right' : 'pin-name'}
             key={pin.dx + ':' + pin.dy}
             style={{
               top: ((pin.dy - bounds.y0) / height) * 100 + '%',
-              [right ? 'right' : 'left']: labelInset,
+              [side]: labelInset,
             }}
             aria-hidden="true"
             title={pin.label}
